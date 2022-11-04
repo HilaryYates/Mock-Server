@@ -1,30 +1,45 @@
 import express from "express";
-import * as bodyParser from "body-parser";
+import bodyParser from "body-parser";
+import cors from "cors";
+import knex from "knex";
 
 const app = express();
 
-const database = {
-  users: [
-    {
-      user: "John",
-      email: "johndoe@gmail.com",
-      password: "123",
-      // id: "400",
-    },
-  ],
-};
+app.use(bodyParser.json());
+app.use(cors());
+
+const db = knex({
+  client: "pg",
+  connection: {
+    host: "127.0.0.1",
+    user: "postgres",
+    password: "test",
+    database: "wikipedia",
+  },
+});
+
+db.select("*")
+  .from("users")
+  .then((data) => console.log(data));
 
 app.get("/", (req, res) => {
-  res.send(database.users);
+  // res.send(database.users);
 });
 
 app.post("/register", (req, res) => {
-  const { user, email, password } = req.body;
-  database.users.push({ user: user, email: email, password: password });
+  const { name, email, password } = req.body;
+
+  db("users")
+    .returning("*")
+    .insert({ name: name, email: email })
+    .then((user) => {
+      res.json(user[0]);
+    })
+    .catch((err) => res.status(400).json("unable to register"));
 });
 
 app.post("/signin", (req, res) => {
-  res.json("sign-in");
+  // res.json("sign-in");
 });
 
 // app.get("/profile:id", (req, res) => {
