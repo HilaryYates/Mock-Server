@@ -29,14 +29,29 @@ app.get("/", (req, res) => {
 
 app.post("/register", (req, res) => {
   const { name, email, password } = req.body;
-
-  db("users")
-    .returning("*")
-    .insert({ name: name, email: email, password: password })
-    .then((user) => {
-      res.json(user[0]);
-    })
-    .catch((err) => res.status(400).json("unable to register"));
+  // const hash = bcrypt.hashSync(password);
+  db.transaction((trx) => {
+    trx
+      .insert({
+        hash: password,
+        email: email,
+      })
+      .into("login")
+      .returning("email")
+      .then((loginEmail) => {
+        return trx("users")
+          .returning("*")
+          .insert({
+            email: loginEmail,
+            name: name,
+          })
+          .then((user) => {
+            res.json(user[0]);
+          });
+      })
+      .then(trx.commit)
+      .catch(trx.rollback);
+  }).catch((err) => res.status(400).json("unable to register"));
 });
 
 app.post("/signin", (req, res) => {
