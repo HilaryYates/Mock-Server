@@ -2,6 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import knex from "knex";
+import bcrypt from "bcrypt";
 
 const app = express();
 
@@ -18,9 +19,9 @@ const db = knex({
   },
 });
 
-db.select("*")
-  .from("users")
-  .then((data) => console.log(data));
+// db.select("*")
+//   .from("users")
+//   .then((data) => console.log(data));
 
 app.get("/", (req, res) => {
   // res.send(database.users);
@@ -31,7 +32,7 @@ app.post("/register", (req, res) => {
 
   db("users")
     .returning("*")
-    .insert({ name: name, email: email })
+    .insert({ name: name, email: email, password: password })
     .then((user) => {
       res.json(user[0]);
     })
@@ -44,6 +45,10 @@ app.post("/signin", (req, res) => {
 
 // app.get("/profile:id", (req, res) => {
 //   const { id } = req.params;
+//   db.select("*")
+//     .from("users")
+//     .where({ id })
+//     .then((user) => res.json(user[0]));
 // });
 
 app.listen(3000, () => console.log("server listening"));
