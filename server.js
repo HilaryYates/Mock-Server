@@ -19,21 +19,17 @@ const db = knex({
   },
 });
 
-// db.select("*")
-//   .from("users")
-//   .then((data) => console.log(data));
-
 app.get("/", (req, res) => {
   // res.send(database.users);
 });
 
 app.post("/register", (req, res) => {
   const { name, email, password } = req.body;
-  // const hash = bcrypt.hashSync(password);
+  const hash = bcrypt.hashSync(password.toString(), 10);
   db.transaction((trx) => {
     trx
       .insert({
-        hash: password,
+        hash: hash,
         email: email,
       })
       .into("login")
@@ -55,15 +51,10 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/signin", (req, res) => {
-  // res.json("sign-in");
+  // db.select("email", "hash")
+  //   .from("login")
+  //   .where("email", "=", req.body.email)
+  //   .then();
 });
-
-// app.get("/profile:id", (req, res) => {
-//   const { id } = req.params;
-//   db.select("*")
-//     .from("users")
-//     .where({ id })
-//     .then((user) => res.json(user[0]));
-// });
 
 app.listen(3000, () => console.log("server listening"));
